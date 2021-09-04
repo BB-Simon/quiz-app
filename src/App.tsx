@@ -1,25 +1,19 @@
 import React, {useState} from 'react';
 import Questioncard from './components/Questioncard';
-import {fetchQuizQuestions, QuestionState, Difficulty} from './API'
+import {fetchQuizQuestions} from './API'
+import {QuestionState, Difficulty,  AnswerObject} from './Types'
 import {GlobalStyles, Wrapper} from './App.styles'
 
-
-export type AnswerObject = {
-  question: string;
-  answer: string;
-  correct: boolean;
-  correctAnswer: string
-}
 
 const TOTAL_QUESTIONS = 10;
 
 const App = () => {
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState<boolean>(false)
   const [questions, setQuestions] = useState<QuestionState[]>([])
-  const [number, setNumber] = useState(0)
+  const [questionNumber, setQuestionNumber] = useState<number>(0)
   const [userAnswers, setUserAnswers] = useState<AnswerObject[]>([])
-  const [score, setScore] = useState(0)
-  const [gameOver, setGameOver] = useState(true)
+  const [score, setScore] = useState<number>(0)
+  const [gameOver, setGameOver] = useState<boolean>(true)
 
   const startTrivia = async () => {
     setLoading(true);
@@ -28,7 +22,7 @@ const App = () => {
     setQuestions(newQuestions)
     setScore(0);
     setUserAnswers([]);
-    setNumber(0);
+    setQuestionNumber(0);
     setLoading(false)
   }
   const checkAnswer = (e: React.MouseEvent<HTMLButtonElement>) =>{
@@ -36,15 +30,15 @@ const App = () => {
       // user answers
       const answer = e.currentTarget.value;
       // check correct answer
-      const correct = questions[number].correct_answer === answer;
+      const correct = questions[questionNumber].correct_answer === answer;
       // add score if answer is correct
       if(correct) setScore(prev => prev + 1)
       // save answer in the araay of user answer
       const answerObject = {
-        question: questions[number].question,
+        question: questions[questionNumber].question,
         answer,
         correct,
-        correctAnswer: questions[number].correct_answer
+        correctAnswer: questions[questionNumber].correct_answer
       }
       setUserAnswers(prev => [...prev, answerObject])
     }
@@ -52,15 +46,14 @@ const App = () => {
 
   const nextQuetion = ()=> {
     // move to the next question if the not the last question
-    const nextQuetion = number + 1;
+    const nextQuetion = questionNumber + 1;
     if(nextQuetion === TOTAL_QUESTIONS){
       setGameOver(true)
     } else {
-      setNumber(nextQuetion)
+      setQuestionNumber(nextQuetion)
     }
   }
-
-
+  
   return (
     <>
     <GlobalStyles />
@@ -76,15 +69,15 @@ const App = () => {
       
       {!loading && !gameOver && (
         <Questioncard 
-          questionNr={number + 1}
+          questionNumber={questionNumber + 1}
           totalQuestions={TOTAL_QUESTIONS}
-          question={questions[number].question}
-          answers={questions[number].answers} 
-          userAnswer={userAnswers ? userAnswers[number] : undefined}
+          question={questions[questionNumber].question}
+          answers={questions[questionNumber].answers} 
+          userAnswer={userAnswers ? userAnswers[questionNumber] : undefined}
           callback={checkAnswer} 
         />
       )}
-      {!loading && !gameOver && userAnswers.length === number + 1 && number !== TOTAL_QUESTIONS -1 ? (
+      {!loading && !gameOver && userAnswers.length === questionNumber + 1 && questionNumber !== TOTAL_QUESTIONS -1 ? (
         <button className="next" onClick={nextQuetion}>Next Quetion</button>
       ): null}
       
